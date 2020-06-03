@@ -1,0 +1,144 @@
+PS_CMD="ps -x"
+
+SILENT=0
+PFNAME="" #temp file to store process list
+SELF=$$
+ATLEAST_ONE_PROCESS_TERMINATED=0
+
+display(){
+    OUTPUT_STRING=$1
+    if [ $SILENT -eq 0 ]; then	
+    	echo "   "$OUTPUT_STRING
+    fi
+}
+
+get_tmp_file(){
+    ctr=1000
+    while [ 1 ]
+    do
+	ctr=$((ctr+1))
+    	PFNAME="/tmp/.plist_${ctr}"
+    	if [ ! -f $PFNAME ]; then
+	    return 0
+        fi
+    done
+}
+
+terminate_process_list(){
+    PROCESS_NAME="$1"
+    
+    get_tmp_file
+    touch $PFNAME 
+    
+    $PS_CMD | grep $PROCESS_NAME |  grep -v "grep" >> $PFNAME
+
+    P_LIST="`cat $PFNAME`"
+    if [ -z "$P_LIST" ]; then
+	rm -rf $PFNAME
+
+    	if [ $SILENT -eq 0 ]; then	
+	    echo
+	    echo "No process got terminated"
+    	fi
+
+	return 0
+    fi
+
+    display ""	
+    
+    if [ $SILENT -eq 0 ]; then	
+        echo "List of running process with name -> $PROCESS_NAME"
+    fi
+
+    while IFS= read -r line
+    do
+	PID="`echo $line | awk '{print $1}'`"
+	if [ "$PID" = "$SELF" ]; then
+	    #echo "SELF Process ID"
+	    continue	
+	fi
+
+	PNAME="`echo $line | awk '{print $NF}'`"
+	if [ $SILENT -eq 0 ]; then	
+	    echo
+	    echo "    + Terminating Process | PID : $PID | PNAME : $PNAME "
+            read -p "    - Do you want to terminate this process? [ y/n ]" USER_INPUT </dev/tty
+
+	    if [ "$USER_INPUT" = "y" ]; then 
+	    	kill -9 $PID &> /dev/null
+		ATLEAST_ONE_PROCESS_TERMINATED=1
+	    fi
+
+	else
+	    kill -9 $PID &> /dev/null
+	    ATLEAST_ONE_PROCESS_TERMINATED=1
+        fi
+    done < "$PFNAME"
+
+    rm -rf $PFNAME
+
+    if [ $ATLEAST_ONE_PROCESS_TERMINATED -eq 0 ]; then
+    	if [ $SILENT -eq 0 ]; then	
+	    echo
+	    echo "No process got terminated"
+    	fi
+    fi
+
+    return 0	
+}
+
+verify_terminate_status(){
+    PROC_LIST="`$PS_CMD | grep $PROCESS_NAME | grep -v "grep" | awk '{print $1}'`"
+    if [ -z "$PROC_LIST" ]; then
+	return 0
+    else
+	return 1
+    fi
+}
+
+stop_service(){
+    APP_NAME="$1"
+   
+    #if [ $SILENT -eq 0 ]; then	
+    #    echo "Terminating Process [ $APP_NAME ]"
+    #fi
+
+    for i in {1..1}
+    do
+	terminate_process_list $APP_NAME
+    	#verify_terminate_status $APP_NAME
+    
+	#if [ $? -eq 0 ]; then
+	#    return 0;
+    	#fi
+    
+	#display "[ status ] All/Few process are not terminated, retrying"
+    done
+    display ""
+}
+
+if [ -z "$1" ]; then
+    echo
+    echo "[ usage ] terminate <process/app_name>"
+    echo
+    echo "	[ example 1 ] "
+    echo ""
+    echo "      terminate test_app"
+    echo ""
+    echo "	[ example 2 ] quite mode"
+    echo ""
+    echo "      terminate test_app -q"
+    echo ""
+    echo ""
+    exit 1
+fi
+
+if [ ! -z "$2" ]; then
+    if [ "$2" = "-q" ]; then
+	SILENT=1
+    fi
+fi
+
+stop_service $1 
+
+

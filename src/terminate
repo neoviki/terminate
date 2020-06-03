@@ -54,11 +54,14 @@ terminate_process_list(){
     display ""	
     
     if [ $SILENT -eq 0 ]; then	
-        echo "List of running process with name -> $PROCESS_NAME"
+        echo "Terminating Process :"
     fi
+
+    index=0
 
     while IFS= read -r line
     do
+        index=$((index+1))
 	PID="`echo $line | awk '{print $1}'`"
 	if [ "$PID" = "$SELF" ]; then
 	    #echo "SELF Process ID"
@@ -68,8 +71,11 @@ terminate_process_list(){
 	PNAME="`echo $line | awk '{print $NF}'`"
 	if [ $SILENT -eq 0 ]; then	
 	    echo
-	    echo "    + Terminating Process | PID : $PID | PNAME : $PNAME "
-            read -p "    - Do you want to terminate this process? [ y/n ]" USER_INPUT </dev/tty
+	    echo -e "\t$index. Do you want to terminate the following process ?"
+	    echo
+	    echo -e "\t   [ PID : $PID  | PNAME : $PNAME ]"
+            echo
+            read -p "           [ y/n ]" USER_INPUT </dev/tty
 
 	    if [ "$USER_INPUT" = "y" ]; then 
 	    	kill -9 $PID &> /dev/null
@@ -111,7 +117,6 @@ terminate_app(){
 	terminate_process_list $APP_NAME
     done
     
-    display ""
 }
 
 terminate_app_force(){

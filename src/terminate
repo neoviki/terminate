@@ -1,3 +1,10 @@
+: '
+    Terminate Utility [ Process Terminator ]
+
+        Author    : Viki - Vignesh Natarajan
+        Contact   : vikiworks.io
+'
+
 PS_CMD="ps -x"
 
 SILENT=0
@@ -90,32 +97,38 @@ terminate_process_list(){
 verify_terminate_status(){
     PROC_LIST="`$PS_CMD | grep $PROCESS_NAME | grep -v "grep" | awk '{print $1}'`"
     if [ -z "$PROC_LIST" ]; then
-	return 0
+	return 0 #No process found
     else
 	return 1
     fi
 }
 
-stop_service(){
+terminate_app(){
     APP_NAME="$1"
    
-    #if [ $SILENT -eq 0 ]; then	
-    #    echo "Terminating Process [ $APP_NAME ]"
-    #fi
-
     for i in {1..1}
     do
 	terminate_process_list $APP_NAME
-    	#verify_terminate_status $APP_NAME
-    
-	#if [ $? -eq 0 ]; then
-	#    return 0;
-    	#fi
-    
-	#display "[ status ] All/Few process are not terminated, retrying"
     done
+    
     display ""
 }
+
+terminate_app_force(){
+    APP_NAME="$1"
+   
+    for i in {1..10}
+    do
+	terminate_process_list $APP_NAME
+    	verify_terminate_status $APP_NAME
+    
+	if [ $? -eq 0 ]; then
+	    return 0; #All process got terminated
+    	fi
+    
+    done
+}
+
 
 if [ -z "$1" ]; then
     echo
@@ -129,6 +142,9 @@ if [ -z "$1" ]; then
     echo ""
     echo "      terminate test_app -q"
     echo ""
+    echo "	[ example 3 ] force mode ( make sure the process is terminated )"
+    echo ""
+    echo "      terminate test_app -force"
     echo ""
     exit 1
 fi
@@ -137,8 +153,14 @@ if [ ! -z "$2" ]; then
     if [ "$2" = "-q" ]; then
 	SILENT=1
     fi
+    
+    if [ "$2" = "-force" ]; then
+        SILENT=1
+	terminate_app_force $1 
+        exit 0
+    fi
 fi
 
-stop_service $1 
+terminate_app $1 
 
 

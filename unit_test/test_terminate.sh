@@ -22,7 +22,7 @@ sleep 1
 echo
 echo
 echo "[ status ] terminating dummy process"
-./terminate "dummy_process.sh"
+../src/terminate "dummy_process.sh"
 echo
 echo
 echo

@@ -1,6 +1,6 @@
 ## Terminate
 
-    Linux utility to terminate a process in a smart way. 
+    Linux utility to terminate a process
 
 ### How to install this package?
 

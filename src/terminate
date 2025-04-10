@@ -1,8 +1,8 @@
 : '
     Terminate Utility [ Process Terminator ]
 
-        Author    : Viki - Vignesh Natarajan
-        Contact   : vikiworks.io
+        Author    : Viki - V Natarajan
+        Contact   : viki.design
 '
 
 PS_CMD="ps -x"

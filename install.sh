@@ -1,11 +1,12 @@
 #! /bin/bash
 : '
-   Linux command line utility installer. 
-    				-->   [ Author ]  Viki (a) Vignesh Natarajan 
-				-->   [ Domain ]  https://vikiworks.io 
+   Linux command line utility installer.
+    			-->   [ Author ]  Viki (a) V Natarajan
+				-->   [ Domain ]  https://viki.design
 '
 
-UTILITY_NAME="terminator"
+cd src
+UTILITY_NAME="terminate"
 
 INSTALL_DIR="/usr/bin"
 
@@ -27,7 +28,7 @@ get_installation_directory(){
 
 install_util(){
     chmod +x ./$UTILITY_NAME
-    #check sudo 
+    #check sudo
     cp ./$UTILITY_NAME $INSTALL_DIR
 }
 
